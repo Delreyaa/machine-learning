@@ -1,3 +1,5 @@
+import os
+
 # numbers, stats, plots
 import pandas as pd
 from pandas.plotting import scatter_matrix
@@ -31,7 +33,7 @@ def load_data():
     data,target,feature_names,target_names
     """
     # Load the data from this file
-    data_dir = "abalone-dataset\\abalone.data"
+    data_dir = os.path.join(os.getcwd(), "knn_svm_proj\\abalone-dataset\\abalone.data")
 
     # x data labels
     xnlabs = ["Sex"]
