@@ -19,6 +19,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.model_selection import ShuffleSplit, StratifiedKFold
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report
 
 # machine learning algorithm of interest
 from sklearn.neighbors import KNeighborsClassifier
@@ -59,9 +60,10 @@ def load_data():
     df = df[df["Height"] > 0.0]
     df = df[df["Length"] > 0.0]
     df = df[df["Diameter"] > 0.0]
-
-    df["Volume"] = df["Height"] * df["Length"] * df["Diameter"]
-    xqlabs.append("Volume")
+    # df["Volume"] = df["Height"] * df["Length"] * df["Diameter"]
+    # xqlabs.append("Volume")
+    ## Filter values that Rings>11
+    df = df[df["Rings"] < 12]
 
     dummies = pd.get_dummies(df[xnlabs], prefix="Sex")
 
@@ -117,11 +119,12 @@ if __name__ == "__main__":
 
     # store the training set using KNeighborsClassifier class
     knn = KNeighborsClassifier(
-        n_neighbors=42
+        n_neighbors=48
+        # n_neighbors=35
     )  # fixed number k of neighbors in the training set to 5
 
     # build the model on the training set
-    knn.fit(X_train, y_train)  # returns the knn object itself
+    knn.fit(X_train, y_train["Rings"].values)  # returns the knn object itself
 
     # Making Predictions
 
@@ -131,7 +134,7 @@ if __name__ == "__main__":
 
     # Making the Confusion Matrix
     cm = confusion_matrix(y_test, y_pred)
-    print(cm)
+    print("Confusion Matrix:\n{}".format(cm))
 
     # evaluating the Model
     # print("Test set score: {:.2f}".format(np.mean(y_pred == y_test)))  # use np.mean()
@@ -146,17 +149,25 @@ if __name__ == "__main__":
     print("Test set score: {:.2f}".format(score / len(y_pred)))  # use np.mean()
     print("Test set score: {:.2f}".format(knn.score(X_test, y_test)))  # use knn.score()
 
+    print(
+        "Classification Report:\n{}".format(
+            classification_report(y_test, y_pred, zero_division=1)
+        )
+    )
+
     # Plot result figure
-    x = X_test["Volume"]
+    plt.subplot(122)
+    # x = X_test["Volume"]
+    x = list(range(1, X_test.shape[0] + 1))
     y1 = y_test["Rings"].values
     y2 = y_pred
     plt.plot(x, y1, "b.", label="Actual Rings of test set")
     plt.plot(x, y2, "rx", label="Predicted Rings of test set")
     plt.title("K-Nearest Neighbors Classification (Test set)")
-    plt.xlabel("Volume")
+    plt.xlabel("Index")
     plt.ylabel("Rings")
     plt.legend()
-    plt.show()
+    # plt.show()
 
     # predict on training set
     y_pred_on_trainset = knn.predict(X_train)
@@ -174,13 +185,15 @@ if __name__ == "__main__":
     )  # use np.mean()
 
     # Plot result figure
-    x = X_train["Volume"]
+    plt.subplot(121)
+    # x = X_train["Volume"]
+    x = list(range(1, X_train.shape[0] + 1))
     y1 = y_train["Rings"].values
     y2 = y_pred_on_trainset
     plt.plot(x, y1, "bo", label="Actual Rings of train set")
     plt.plot(x, y2, "r+", label="Predicted Rings of train set")
     plt.title("K-Nearest Neighbors Classification (Train set)")
-    plt.xlabel("Volume")
+    plt.xlabel("Index")
     plt.ylabel("Rings")
     plt.legend()
     plt.show()
